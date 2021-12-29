@@ -139,7 +139,13 @@ class Coverage::SourceFile < Crystal::Visitor
   end
 
   def self.final_operations
-    "\n Spec.after_suite { ::Coverage.get_results(#{@@outputter}.new) }"
+    <<-EOF
+    {% if @type.has_constant? "Spectator" %}
+      Spectator.configure { |c| c.after_suite { ::Coverage.get_results(#{@@outputter}.new) } }
+    {% else %}
+      Spec.after_suite { ::Coverage.get_results(#{@@outputter}.new) }
+    {% end %}
+    EOF
   end
 
   # Inject line tracer for easy debugging.
